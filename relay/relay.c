@@ -1,8 +1,6 @@
 #include <stdio.h> 
 #include <getopt.h>
 
-#include "../include/list.h"
-
 /*
  * TODO some tools to add
  * buffer, warn, exit
