@@ -14,6 +14,19 @@ struct buffer
 	size_t len;
 };
 
+int set_fd_nonblock(int fd)
+{       
+	int flags;       
+	flags = fcntl(fd, F_GETFL);       
+	if (flags < 0)               
+		return flags;       
+	flags |= O_NONBLOCK;       
+	if (fcntl(fd, F_SETFL, flags) < 0)               
+		return -1;       
+
+	return 0;
+}
+
 int get_host_name(char* hostname, size_t &lhostname, char* str, size_t lstr)
 {
 	char *sta, *end;
@@ -46,11 +59,23 @@ int resolve(char* hostname, struct sockaddr_in *addr)
 		return -1;
 	}
 	addr->sin_addr.s_addr = *((unsigned int *) host->h_addr_list[0]);
+	if (mid_ptr != NULL) mid_ptr = ':';
+
 	return 0;
 }
 
-int connect_to_remote()
+int connect_to_remote(int *fd, struct sockaddr_in srv_addr)
 {
+	if ((*fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) { 
+		// TODO warn
+		return -1;
+	}
+	// TODO this is a blocking function !!
+	if (connect(*fd, &srv_addr, sizeof(srv_addr)) < 0) {
+		// TODO warn
+		return -1;
+	}
+	return 0;
 }
 
 #endif

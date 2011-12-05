@@ -18,7 +18,9 @@ int connect_to_server(struct session* s)
 		return -1;
 	if (resolve(hostname, &s->srv_addr) < 0)
 		return -1;
-	if (connect_to_remote(
+	if (connect_to_remote(&s->srv_fd, s->srv_addr) < 0)
+		return -1;
+	return 0;
 }
 
 void client_read_callback(evutil_socket_t fd, short what, void *arg)
