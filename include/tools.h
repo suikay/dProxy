@@ -70,11 +70,13 @@ int connect_to_remote(int *fd, struct sockaddr_in srv_addr)
 		// TODO warn
 		return -1;
 	}
-	// TODO this is a blocking function !!
-	if (connect(*fd, &srv_addr, sizeof(srv_addr)) < 0) {
+	set_fd_nonblock(*fd);
+	if (connect(*fd, &srv_addr, sizeof(srv_addr)) < 0 && errno != EINPROGRESS) {
 		// TODO warn
 		return -1;
 	}
+	// TODO add event
+	// TODO try it
 	return 0;
 }
 
