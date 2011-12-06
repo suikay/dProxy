@@ -106,8 +106,7 @@ void get_connected(evutil_socket_t fd, short what, void *arg)
 	s->cli_state = ST_CONNECT;
 	s->srv_state = ST_NOT_CONNECT;
 
-	ev = event_new(base, s->cli_fd, EV_READ | EV_PERSIST, client_read_callback, s);
-	event_add(ev, NULL); 
+	add_event_to_base(base, s->cli_fd, EV_READ | EV_PERSIST, client_read_callback, s, NULL);
 }
 
 int main(int argc, char* argv[])
@@ -122,8 +121,7 @@ int main(int argc, char* argv[])
 		// TODO warn
 		return -1;
 	}
-	server_ev = event_new(base, sock, EV_READ | EV_PERSIST, get_connected, NULL);
-	event_add(server_ev, NULL);
+	add_event_to_base(base, sock, EV_READ | EV_PERSIST, get_connected, NULL, NULL);
 
 	event_base_dispatch(base);
 	return 0;

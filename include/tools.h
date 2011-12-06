@@ -14,15 +14,26 @@ struct buffer
 	size_t len;
 };
 
+/* This function create a new event and add it to the base.
+ */
+void add_event_to_base(struct event_base *base, int fd, int what,
+	   event_callback_fn fn, void *arg, struct timeval* tv)
+{
+	struct event* ev;
+
+	ev = event_new(base, fd, what, fn, arg);
+	event_add(ev, tv);
+}
+
 int set_fd_nonblock(int fd)
-{       
-	int flags;       
-	flags = fcntl(fd, F_GETFL);       
-	if (flags < 0)               
-		return flags;       
-	flags |= O_NONBLOCK;       
-	if (fcntl(fd, F_SETFL, flags) < 0)               
-		return -1;       
+{
+	int flags;
+	flags = fcntl(fd, F_GETFL);
+	if (flags < 0)
+		return flags;
+	flags |= O_NONBLOCK;
+	if (fcntl(fd, F_SETFL, flags) < 0)
+		return -1;
 
 	return 0;
 }
@@ -37,7 +48,7 @@ int get_host_name(char* hostname, size_t &lhostname, char* str, size_t lstr)
 
 	*lhostname = end - sta;
 	strncpy(hostname, sta, lhostname);
-	hostname[lhostname] = '\0'; 
+	hostname[lhostname] = '\0';
 
 	return 0;
 }
@@ -54,7 +65,7 @@ int resolve(char* hostname, struct sockaddr_in *addr)
 	} else {
 		addr->sin_port = htons(80);
 	}
-	if ((host = gethostbyname(hostname)) == NULL) { 
+	if ((host = gethostbyname(hostname)) == NULL) {
 		// TODO warn
 		return -1;
 	}
@@ -64,9 +75,13 @@ int resolve(char* hostname, struct sockaddr_in *addr)
 	return 0;
 }
 
-int connect_to_remote(int *fd, struct sockaddr_in srv_addr)
+/*
+ * This asynchronous fuction connect to remote server.
+ * It means you have to set the event after calling this function.
+ */
+int connect_to_remote_asyn(int *fd, struct sockaddr_in srv_addr)
 {
-	if ((*fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) { 
+	if ((*fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
 		// TODO warn
 		return -1;
 	}
@@ -75,8 +90,7 @@ int connect_to_remote(int *fd, struct sockaddr_in srv_addr)
 		// TODO warn
 		return -1;
 	}
-	// TODO add event
-	// TODO try it
+
 	return 0;
 }
 
