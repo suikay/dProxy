@@ -21,7 +21,7 @@ void write_to_server(struct session* s)
 	if (s->cli_state == ST_READ) {
 		sz = write(s->srv_fd, s->cli_buffer.content, s->cli_buffer.len);
 		if (sz < 0) {
-			// TODO check the errno
+			perror("write to server failed. try again later.");
 			add_event_to_base(base, s->srv_fd, EV_WRITE, (void*) s);
 			return ;
 		}
@@ -66,7 +66,7 @@ void client_read_callback(evutil_socket_t fd, short what, void *arg)
 	struct session *s = (struct session*) arg;
 
 	if (s->cli_buffer.len >= MAX_BUFFER_LEN) {
-		// TODO warn
+		warn("client buffer full.");
 		return ;
 	}
 	s->cli_buffer.len += read(s->cli_fd, s->cli_buffer.content, 

@@ -35,7 +35,7 @@ int parse_opt(int argc, char* argv[])
 			case 's':
 				source_port = atoi(optarg);
 				if (source_port <= 0 || source_port > 65535) {
-					// TODO warn
+					warn("invalid port number: %s .\n", optarg);
 					print_help(argv[0]);
 					return 1;
 				}
@@ -43,35 +43,36 @@ int parse_opt(int argc, char* argv[])
 			case 't':
 				target_port = atoi(optarg);
 				if (target_port <= 0 || target_port > 65535) {
-					// TODO warn
+					warn("invalid port number: %s .\n", optarg);
 					print_help(argv[0]);
 					return 1;
 				}
 				break;
 			default:
-				// TODO warn
+				warn("unknown option: %c .\n", opt);
 				print_help(argv[0]);
 				return 1;
 		}
 	}
 	if (source_port < 0 || target_port < 0) {
-		// TODO warn
+		warn("source_port or target_port not set.\n");
 		print_help(argv[0]);
 		return -1;
 	}
 	if (source_port == target_port) {
-		// TODO warn two ports should not be the same
+		warn("source_port and target_port is the same.\n");
 		return -1;
 	}
 
 	return 0;
 }
+
 int create_server(char* hostname, int port) 
 {
 	int sock;
 	struct sockaddr_in srv_addr;
 	if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-		// TODO warn
+		perror("create socket() for server failed.");
 		return -1;
 	}
 	memset(srv_addr, 0, sizeof(srv_addr));
@@ -79,11 +80,11 @@ int create_server(char* hostname, int port)
 	srv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	srv_addr.sin_port = htons(port); 
 	if (bind(sock, (struct sockaddr *)&srv_addr, sizeof(srv_addr)) < 0) {
-		// TODO warn
+		perror("bind() for server failed.");
 		return -1;
 	}
-	if (listed(sock, MAXPENDING) < 0) {
-		// TODO warn
+	if (listen(sock, MAXPENDING) < 0) {
+		perror("listen() for server failed.");
 		return -1;
 	}
 	return sock;
@@ -97,7 +98,7 @@ void get_connected(evutil_socket_t fd, short what, void *arg)
 
 	unsigned int cli_len = sizeof(cli_addr);
 	if ((client_fd = accept(fd, (struct sockaddr *)&cli_addr, &cli_len)) < 0) {
-		// TODO warn
+		perror("accept() failed.");
 		return -1;
 	}
 	s = calloc(sizeof(struct session));	
@@ -118,7 +119,6 @@ int main(int argc, char* argv[])
 		return -1;
 
 	if ((sock = create_server(NULL, source_port)) < 0) {
-		// TODO warn
 		return -1;
 	}
 	add_event_to_base(base, sock, EV_READ | EV_PERSIST, get_connected, NULL, NULL);
